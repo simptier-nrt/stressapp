@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ストレスチェック / Stress Check</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Inter:wght@300;400;500;600&display=swap');
+  :root {
+    --bg:#f7f6f3;--surface:#fff;--surface2:#f0ede8;--border:#e2ddd6;
+    --text:#1a1814;--text2:#6b6560;--text3:#9e9892;
+    --accent:#2d6a4f;--accent-light:#d8f3dc;
+    --warn:#e07a39;--warn-light:#fef3e8;
+    --high:#c0392b;--high-light:#fdecea;
+    --mid:#e07a39;--mid-light:#fef3e8;
+    --low:#2d6a4f;--low-light:#d8f3dc;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Noto Sans JP','Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.7;}
+
+  /* NAV */
+  nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;gap:8px;}
+  .nav-brand{font-size:14px;font-weight:500;color:var(--text);white-space:nowrap;}
+  .nav-brand span{color:var(--accent);}
+  .nav-right{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end;}
+  .nav-tabs{display:flex;gap:3px;}
+  .nav-tab{padding:5px 12px;border-radius:6px;border:none;background:transparent;cursor:pointer;font-size:12px;font-family:inherit;color:var(--text2);transition:all .15s;}
+  .nav-tab:hover{background:var(--surface2);color:var(--text);}
+  .nav-tab.active{background:var(--accent);color:#fff;font-weight:500;}
+
+  /* LANG TOGGLE */
+  .lang-toggle{display:flex;border:1px solid var(--border);border-radius:6px;overflow:hidden;}
+  .lang-btn{padding:5px 10px;border:none;background:transparent;cursor:pointer;font-size:11px;font-family:inherit;color:var(--text2);transition:all .15s;}
+  .lang-btn.active{background:var(--accent);color:#fff;font-weight:500;}
+
+  /* PAGES */
+  .page{display:none;}.page.active{display:block;}
+
+  /* FORM */
+  .form-wrap{max-width:700px;margin:0 auto;padding:36px 20px 80px;}
+  .form-header{margin-bottom:28px;}
+  .form-header h1{font-size:20px;font-weight:500;margin-bottom:6px;}
+  .form-header p{color:var(--text2);font-size:13px;}
+  .progress-bar{height:3px;background:var(--border);border-radius:2px;margin-bottom:28px;overflow:hidden;}
+  .progress-fill{height:100%;background:var(--accent);transition:width .3s;border-radius:2px;}
+
+  .emp-section{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px;}
+  .emp-section h2{font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:14px;}
+  .emp-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .field label{display:block;font-size:12px;color:var(--text2);margin-bottom:3px;}
+  .field input,.field select{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:7px;font-size:13px;font-family:inherit;background:var(--surface);color:var(--text);outline:none;transition:border-color .15s;}
+  .field input:focus,.field select:focus{border-color:var(--accent);}
+
+  .q-section{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:14px;}
+  .q-section-title{font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;}
+  .q-section-desc{font-size:13px;color:var(--text);margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border);}
+
+  /* スティッキー選択肢ラベルバー */
+  .sticky-labels{
+    position:sticky;
+    top:56px; /* navの高さ分 */
+    z-index:50;
+    background:var(--surface);
+    border-bottom:1px solid var(--border);
+    border-top:1px solid var(--border);
+    margin:0 -20px 4px;
+    padding:6px 20px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    box-shadow:0 2px 8px rgba(0,0,0,.06);
+  }
+  .sticky-labels .sl-title{
+    flex:1;
+    font-size:11px;
+    font-weight:500;
+    color:var(--accent);
+    letter-spacing:.03em;
+  }
+  .sticky-labels .sl-opts{
+    display:flex;
+    gap:3px;
+    flex-shrink:0;
+  }
+  .sticky-labels .sl-item{
+    width:40px;
+    text-align:center;
+    font-size:10px;
+    color:var(--text2);
+    line-height:1.3;
+    padding:3px 2px;
+    border-radius:5px;
+    background:var(--surface2);
+  }
+  .sticky-labels .sl-num{
+    display:block;
+    font-weight:600;
+    font-size:12px;
+    color:var(--accent);
+    margin-bottom:1px;
+  }
+
+  .question-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--bg);}
+  .question-row:last-child{border-bottom:none;}
+  .q-num{width:22px;height:22px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text3);flex-shrink:0;font-weight:500;}
+  .q-text{flex:1;font-size:13px;line-height:1.5;}
+  .q-options{display:flex;gap:3px;flex-shrink:0;}
+  .q-opt{width:40px;height:30px;border:1px solid var(--border);border-radius:6px;background:var(--surface);cursor:pointer;font-size:11px;font-family:inherit;color:var(--text2);transition:all .12s;display:flex;align-items:center;justify-content:center;}
+  .q-opt:hover{background:var(--surface2);border-color:var(--accent);}
+  .q-opt.selected{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+  .submit-btn{width:100%;padding:13px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:14px;font-family:inherit;font-weight:500;cursor:pointer;margin-top:20px;transition:opacity .15s;}
+  .submit-btn:hover{opacity:.88;}
+  .submit-btn:disabled{opacity:.4;cursor:default;}
+  .info-note{font-size:11px;color:var(--text3);margin-top:8px;padding:8px 12px;background:var(--surface2);border-radius:6px;}
+
+  /* RESULT */
+  .result-wrap{max-width:700px;margin:0 auto;padding:36px 20px 80px;}
+  .result-header{text-align:center;margin-bottom:28px;}
+  .result-header h1{font-size:19px;font-weight:500;margin-bottom:6px;}
+  .result-header p{color:var(--text2);font-size:12px;}
+  .result-badge{display:inline-flex;align-items:center;gap:6px;padding:9px 20px;border-radius:100px;font-size:15px;font-weight:500;margin:14px 0;}
+  .result-badge.low{background:var(--low-light);color:var(--low);}
+  .result-badge.mid{background:var(--mid-light);color:var(--mid);}
+  .result-badge.high{background:var(--high-light);color:var(--high);}
+  .score-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;}
+  .score-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;}
+  .score-card .label{font-size:11px;color:var(--text2);margin-bottom:6px;}
+  .score-card .value{font-size:26px;font-weight:300;font-family:'Inter',sans-serif;}
+  .score-card .max-label{font-size:11px;color:var(--text3);}
+  .score-card.stress .value{color:var(--high);}
+  .score-card.workload .value{color:var(--mid);}
+  .score-card.support .value{color:var(--low);}
+  .gauge-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:14px;}
+  .gauge-title-lbl{font-size:12px;color:var(--text2);margin-bottom:4px;font-weight:500;}
+  .gauge-bar{height:9px;background:var(--surface2);border-radius:4px;overflow:hidden;margin-bottom:5px;}
+  .gauge-fill{height:100%;border-radius:4px;transition:width 1s cubic-bezier(.4,0,.2,1);}
+  .gauge-row{display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:12px;}
+  .advice-box{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:10px;padding:18px;margin-bottom:14px;}
+  .advice-box h3{font-size:13px;font-weight:500;margin-bottom:8px;}
+  .advice-box ul{padding-left:16px;}
+  .advice-box li{font-size:13px;color:var(--text2);margin-bottom:3px;line-height:1.6;}
+  .notice-box{background:var(--warn-light);border:1px solid #f5c09e;border-radius:10px;padding:14px 18px;font-size:12px;color:#7a4010;margin-bottom:14px;}
+  .back-btn{width:100%;padding:11px;border:1px solid var(--border);border-radius:10px;background:var(--surface);font-size:13px;font-family:inherit;cursor:pointer;color:var(--text2);transition:all .15s;}
+  .back-btn:hover{background:var(--surface2);}
+
+  /* ADMIN */
+  .admin-wrap{max-width:960px;margin:0 auto;padding:36px 20px 80px;}
+  .admin-login{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px;max-width:340px;margin:50px auto;text-align:center;}
+  .admin-login h2{font-size:15px;font-weight:500;margin-bottom:6px;}
+  .admin-login p{font-size:12px;color:var(--text2);margin-bottom:20px;}
+  .admin-login input{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:7px;font-size:14px;font-family:inherit;outline:none;margin-bottom:10px;transition:border-color .15s;}
+  .admin-login input:focus{border-color:var(--accent);}
+  .admin-login button{width:100%;padding:10px;background:var(--accent);color:#fff;border:none;border-radius:7px;font-size:14px;font-family:inherit;cursor:pointer;font-weight:500;}
+  .login-error{font-size:12px;color:var(--high);margin-top:6px;}
+  .admin-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+  .admin-header h1{font-size:19px;font-weight:500;}
+  .export-btn{padding:7px 13px;border:1px solid var(--border);border-radius:7px;background:var(--surface);font-size:12px;font-family:inherit;cursor:pointer;color:var(--text2);transition:all .12s;}
+  .export-btn:hover{background:var(--surface2);}
+  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;}
+  .stat-card .s-label{font-size:11px;color:var(--text3);margin-bottom:6px;}
+  .stat-card .s-value{font-size:24px;font-weight:300;font-family:'Inter',sans-serif;}
+  .stat-card .s-sub{font-size:11px;color:var(--text3);margin-top:2px;}
+  .chart-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+  .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;}
+  .chart-card h3{font-size:12px;color:var(--text2);margin-bottom:14px;font-weight:500;}
+  .dist-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  .dist-label{width:64px;font-size:12px;color:var(--text2);}
+  .dist-track{flex:1;height:7px;background:var(--surface2);border-radius:3px;overflow:hidden;}
+  .dist-fill{height:100%;border-radius:3px;}
+  .dist-count{font-size:12px;color:var(--text3);width:28px;text-align:right;}
+  .dept-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+  .dept-name{width:90px;font-size:12px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .dept-track{flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;}
+  .dept-fill{height:100%;background:var(--accent);border-radius:3px;}
+  .dept-score{font-size:12px;color:var(--text3);width:28px;text-align:right;}
+  .admin-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:14px;}
+  .admin-table-head{padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .admin-table-head h3{font-size:13px;font-weight:500;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  thead th{padding:9px 14px;text-align:left;font-size:11px;font-weight:500;color:var(--text3);background:var(--bg);border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.04em;}
+  tbody td{padding:10px 14px;border-bottom:1px solid var(--bg);color:var(--text);}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover td{background:var(--bg);}
+  .tag{display:inline-block;padding:2px 9px;border-radius:100px;font-size:11px;font-weight:500;}
+  .tag.low{background:var(--low-light);color:var(--low);}
+  .tag.mid{background:var(--mid-light);color:var(--mid);}
+  .tag.high{background:var(--high-light);color:var(--high);}
+  .pdf-btn{width:100%;padding:12px;background:var(--surface);border:2px solid var(--accent);border-radius:10px;font-size:14px;font-family:inherit;font-weight:500;cursor:pointer;color:var(--accent);transition:all .15s;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .pdf-btn:hover{background:var(--accent-light);}
+
+  /* 印刷専用スタイル */
+  @media print {
+    nav,.lang-toggle,.nav-tabs,.progress-bar,.emp-section,
+    .q-section,#page-form,#page-admin,.pdf-btn,
+    #mailBanner,.info-note,#criteriaBox{display:none!important;}
+    #page-result{display:block!important;}
+    .result-wrap{padding:20px;max-width:100%;}
+    body{background:#fff;}
+    .score-cards{grid-template-columns:repeat(3,1fr);}
+    .gauge-wrap,.advice-box,.notice-box{break-inside:avoid;}
+    .result-header{text-align:center;margin-bottom:20px;}
+    .print-header{display:block!important;}
+    .print-footer{display:block!important;}
+  }
+  .print-header{display:none;text-align:center;margin-bottom:16px;font-size:13px;color:#666;}
+  .print-footer{display:none;margin-top:20px;padding-top:12px;border-top:1px solid #ccc;font-size:11px;color:#999;text-align:center;}
+</style>
+</head>
+<body>
+
+<nav>
+<div class="nav-brand" id="navBrand"></div>
+  <div class="nav-right">
+    <div class="lang-toggle">
+      <button class="lang-btn active" id="btnJA" onclick="setLang('ja')">日本語</button>
+      <button class="lang-btn" id="btnEN" onclick="setLang('en')">English</button>
+    </div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" id="tabForm" onclick="showPage('form')"></button>
+      <button class="nav-tab" id="tabResult" onclick="showPage('result')" style="display:none"></button>
+      <button class="nav-tab" id="tabAdmin" onclick="showPage('admin')"></button>
+    </div>
+  </div>
+</nav>
+
+<!-- ===== FORM PAGE ===== -->
+<div id="page-form" class="page active">
+  <div class="form-wrap">
+    <div class="form-header">
+      <h1 id="formTitle"></h1>
+      <p id="formDesc"></p>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+
+    <div class="emp-section">
+      <h2 id="basicInfoLabel"></h2>
+      <div class="emp-grid">
+        <div class="field"><label id="labelName"></label><input type="text" id="empName" placeholder=""></div>
+        <div class="field"><label id="labelId"></label><input type="text" id="empId" placeholder="EMP-0001"></div>
+        <div class="field">
+          <label id="labelDept"></label>
+          <select id="empDept"><option value="" id="deptPlaceholder"></option></select>
+        </div>
+        <div class="field">
+          <label id="labelGender"></label>
+          <select id="empGender">
+            <option value="" id="genderPlaceholder"></option>
+            <option value="male" id="genderMale"></option>
+            <option value="female" id="genderFemale"></option>
+            <option value="other" id="genderOther"></option>
+          </select>
+        </div>
+        <div class="field">
+          <label id="labelBranch"></label>
+          <select id="empBranch"><option value="" id="branchPlaceholder"></option></select>
+        </div>
+        <div class="field" style="grid-column:1/-1;">
+          <label id="labelEmail"></label>
+          <input type="email" id="empEmail" placeholder="email@example.com" style="max-width:360px;">
+          <p id="emailNote" style="font-size:11px;color:var(--text3);margin-top:4px;"></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="q-section">
+      <div class="q-section-title" id="secATitleLabel"></div>
+      <div class="q-section-desc" id="secADesc"></div>
+      <div id="sectionA"></div>
+    </div>
+    <div class="q-section">
+      <div class="q-section-title" id="secBTitleLabel"></div>
+      <div class="q-section-desc" id="secBDesc"></div>
+      <div id="sectionB"></div>
+    </div>
+    <div class="q-section">
+      <div class="q-section-title" id="secCTitleLabel"></div>
+      <div class="q-section-desc" id="secCDesc"></div>
+      <div id="sectionC"></div>
+    </div>
+
+    <p class="info-note" id="privacyNote"></p>
+    <button class="submit-btn" id="submitBtn" onclick="submitForm()"></button>
+  </div>
+</div>
+
+<!-- ===== CONFIRM MODAL ===== -->
+<div id="confirmOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;">
+  <div style="background:var(--surface);border-radius:16px;padding:28px;max-width:680px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.2);margin:auto;">
+    <h2 id="confirmTitle" style="font-size:17px;font-weight:500;margin-bottom:6px;"></h2>
+    <p id="confirmDesc" style="font-size:13px;color:var(--text2);margin-bottom:20px;"></p>
+    <div id="confirmContent"></div>
+    <div style="display:flex;gap:10px;margin-top:20px;position:sticky;bottom:0;background:var(--surface);padding:12px 0 0;">
+      <button id="confirmBackBtn" onclick="closeConfirm()"
+        style="flex:1;padding:11px;border:1px solid var(--border);border-radius:9px;background:var(--surface);font-size:13px;font-family:inherit;cursor:pointer;color:var(--text2);"></button>
+      <button id="confirmSendBtn" onclick="doSend()"
+        style="flex:2;padding:11px;background:var(--accent);color:#fff;border:none;border-radius:9px;font-size:14px;font-family:inherit;font-weight:500;cursor:pointer;"></button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== RESULT PAGE ===== -->
+<div id="page-result" class="page">
+  <div class="result-wrap">
+    <!-- 印刷時のみ表示 -->
+    <div class="print-header">
+      <strong id="printTitle"></strong><br>
+      <span id="printSubtitle"></span>
+    </div>
+
+    <div id="mailBanner" style="display:none;padding:10px 16px;border-radius:8px;border:1px solid;font-size:13px;margin-bottom:18px;"></div>
+    <div id="driveBanner" style="display:none;padding:10px 16px;border-radius:8px;border:1px solid #74c69d;font-size:13px;margin-bottom:18px;background:var(--accent-light);color:var(--accent);">
+      ✓ <span id="driveBannerText"></span>
+    </div>
+    <div class="result-header">
+      <h1 id="resultTitle"></h1>
+      <p id="resultDate"></p>
+      <div id="resultBadge" class="result-badge low">—</div>
+    </div>
+    <div class="score-cards">
+      <div class="score-card stress">
+        <div class="label" id="labelScoreStress"></div>
+        <div class="value" id="scoreStress">—</div>
+        <div class="max-label">/124</div>
+      </div>
+      <div class="score-card workload">
+        <div class="label" id="labelScoreWorkload"></div>
+        <div class="value" id="scoreWorkload">—</div>
+        <div class="max-label">/64</div>
+      </div>
+      <div class="score-card support">
+        <div class="label" id="labelScoreSupport"></div>
+        <div class="value" id="scoreSupport">—</div>
+        <div class="max-label">/48</div>
+      </div>
+    </div>
+    <div class="gauge-wrap"><div id="gauges"></div></div>
+    <div id="adviceBox" class="advice-box"></div>
+    <div id="criteriaBox" style="background:var(--surface2);border-radius:10px;padding:14px 18px;margin-bottom:14px;"></div>
+    <div id="highStressNotice" class="notice-box hidden"></div>
+
+    <!-- PDFダウンロードボタン -->
+    <button class="pdf-btn" id="pdfDownloadBtn" onclick="downloadPDF()">
+      📄 <span id="pdfBtnText">PDFをダウンロード</span>
+    </button>
+
+    <!-- 印刷時のみ表示されるフッター -->
+    <div class="print-footer">
+      <p id="printPrivacy"></p>
+      <p id="printCompany"></p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ADMIN PAGE ===== -->
+<div id="page-admin" class="page">
+  <div class="admin-wrap">
+    <div id="adminLogin">
+      <div class="admin-login">
+        <h2 id="adminLoginTitle"></h2>
+        <p id="adminLoginDesc"></p>
+        <input type="password" id="adminPw" onkeydown="if(event.key==='Enter')adminLogin()">
+        <button onclick="adminLogin()" id="adminLoginBtn"></button>
+        <div class="login-error hidden" id="loginError"></div>
+      </div>
+    </div>
+    <div id="adminDash" class="hidden">
+      <div class="admin-header">
+        <div>
+          <h1 id="adminDashTitle"></h1>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+            <label style="font-size:12px;color:var(--text2)" id="labelFiscalYear"></label>
+            <select id="fiscalYearSelect" onchange="loadAdminData()"
+              style="padding:5px 10px;border:1px solid var(--border);border-radius:7px;font-size:13px;font-family:inherit;background:var(--surface);color:var(--text);outline:none;">
+            </select>
+            <span id="fiscalYearBadge" style="font-size:11px;padding:3px 10px;background:var(--accent-light);color:var(--accent);border-radius:100px;font-weight:500;"></span>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button class="export-btn" onclick="exportPDF()" id="pdfBtn"></button>
+          <button class="export-btn" onclick="exportCSV()" id="exportBtn"></button>
+        </div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="s-label" id="statLabelTotal"></div><div class="s-value" id="adminTotal">0</div><div class="s-sub" id="statSubTotal"></div></div>
+        <div class="stat-card"><div class="s-label" id="statLabelHigh"></div><div class="s-value" id="adminHigh" style="color:var(--high)">0</div><div class="s-sub" id="statSubHigh"></div></div>
+        <div class="stat-card"><div class="s-label" id="statLabelAvgS"></div><div class="s-value" id="adminAvgStress">—</div><div class="s-sub">/124</div></div>
+        <div class="stat-card"><div class="s-label" id="statLabelAvgSup"></div><div class="s-value" id="adminAvgSupport">—</div><div class="s-sub">/48</div></div>
+      </div>
+      <div class="chart-row">
+        <div class="chart-card"><h3 id="chartDistTitle"></h3><div id="distChart"></div></div>
+        <div class="chart-card"><h3 id="chartDeptTitle"></h3><div id="deptChart"></div></div>
+      </div>
+      <div class="admin-table-wrap">
+        <div class="admin-table-head"><h3 id="tableTitle"></h3><span style="font-size:11px;color:var(--text3)" id="adminCount"></span></div>
+        <table>
+          <thead><tr id="tableHead"></tr></thead>
+          <tbody id="adminTableBody"></tbody>
+        </table>
+      </div>
+      <p class="info-note" id="adminNote"></p>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===================== GAS URL =====================
+const GAS_URL = 'https://script.google.com/macros/s/【ここにデプロイURLを貼り付け】/exec';
+
+// ===================== LANGUAGE DATA =====================
+const LANGS = {
+  ja: {
+    navForm:'チェック回答', navResult:'結果表示', navAdmin:'管理者',
+    formTitle: ()=>`${getCurrentFiscalYear()}年度 職場ストレスチェック`,
+    formDesc:'厚生労働省推奨の調査票をもとにした調査です。すべての質問にお答えください。',
+    basicInfoLabel:'基本情報',
+    labelName:'氏名 <span style="color:var(--high);font-size:11px">※必須</span>', namePlaceholder:'山田 太郎',
+    alertName:'氏名を入力してください。',
+    labelId:'社員番号 <span style="color:var(--high);font-size:11px">※必須</span>',
+    alertId:'社員番号を入力してください。',
+    alertDuplicate:(fy)=>`${fy}年度のストレスチェックはすでに回答済みです。同一年度内は1回のみ回答できます。`,
+    labelDept:'部署', deptPlaceholder:'選択してください',
+    depts:['旅客部','機内清掃部','運航部','総務部','貨物部'],
+    labelBranch:'支店', branchPlaceholder:'選択してください',
+    branches:['羽田空港','成田空港','関西空港','北九州空港'],
+    labelGender:'性別', genderPlaceholder:'選択してください',
+    genderMale:'男性', genderFemale:'女性', genderOther:'回答しない',
+    labelEmail:'メールアドレス <span style="color:var(--high);font-size:11px">※結果送信のため必須</span>',
+    emailNote:'入力したアドレスに判定・スコア・アドバイスが送信されます。会社以外には共有されません。',
+    secATitle:'A. ストレスの原因',
+    secADesc:'最近1ヶ月間の仕事について伺います。<br><small style="color:var(--text3)">1=そうだ　2=まあそうだ　3=ややちがう　4=ちがう</small>',
+    secALabels:['そうだ','まあそうだ','ややちがう','ちがう'],
+    secBTitle:'B. ストレス反応',
+    secBDesc:'最近1ヶ月間の状態について伺います。<br><small style="color:var(--text3)">1=ほとんどなかった　2=ときどき　3=しばしば　4=ほとんどいつも</small>',
+    secBLabels:['ほぼなし','ときどき','しばしば','いつも'],
+    secCTitle:'C. 周囲のサポート',
+    secCDesc:'職場の方々についてお聞きします。<br><small style="color:var(--text3)">1=非常に　2=かなり　3=多少　4=全くない</small>',
+    secCLabels:['非常に','かなり','多少','全くない'],
+    privacyNote:'※ この結果は本人にのみ表示されます。事業者への提供は本人の同意なしには行われません（労働安全衛生法第66条の10）。',
+    submitBtn:'回答内容を確認して送信する', submitting:'送信中...',
+    confirmTitle:'回答内容の確認',
+    confirmDesc:'以下の内容で送信します。よろしければ「送信する」を押してください。',
+    confirmSend:'送信する',
+    confirmBack:'戻って修正する',
+    confirmLabels:{name:'氏名',id:'社員番号',dept:'部署',branch:'支店',gender:'性別',email:'メールアドレス',basic:'基本情報'},
+    alertIncomplete:(n)=>`まだ${n}問回答されていない質問があります。すべてお答えください。`,
+    alertEmail:'メールアドレスを正しく入力してください。',
+    resultTitle:'ストレスチェック 結果',
+    resultDateSuffix:' 回答',
+    mailOk:(e)=>`✓ 結果を ${e} に送信しました`,
+    mailSkip:'⚠ メール送信をスキップしました（GAS未設定）。画面の結果をご確認ください。',
+    judgmentLabel:{low:'低ストレス',mid:'注意が必要',high:'高ストレス'},
+    labelScoreStress:'ストレス反応', labelScoreWorkload:'仕事の負荷', labelScoreSupport:'周囲のサポート',
+    gaugeLabels:['ストレス反応','仕事の負荷','上司・同僚のサポート'],
+    pointSuffix:'点',
+    criteriaTitle:'【判定基準について（厚労省・単純合計計算法）】',
+    criteriaText:[
+      'A. 仕事のストレス要因（16問・最高64点）：高いほど仕事の負荷・ストレス要因が大きい',
+      'B. 心身のストレス反応（31問・最高124点）：77点以上で高ストレス判定',
+      'C. 周囲のサポート（12問・最高48点）：高いほどサポートが薄い状態',
+    ],
+    adviceTitle:{low:'良好な状態です',mid:'ストレスへの注意が必要です',high:'高ストレス状態が疑われます'},
+    adviceSubtitle:{
+      workloadHigh:'【仕事の負荷が高い方へ】',
+      workloadMid:'【仕事の負荷についての確認を】',
+      supportLow:'【サポート不足が見られます】',
+      stressBody:'【身体・疲労面のサインが出ています】',
+      stressMood:'【気分・意欲の低下が見られます】',
+      general:'【全般的なセルフケア】',
+    },
+    adviceItems:{
+      low:[
+        '現在の仕事量・ペースは適切に保たれています。このバランスを意識的に維持しましょう。',
+        '上司・同僚との良好な関係が心理的な安全網になっています。日頃のコミュニケーションを大切に。',
+        '睡眠は7〜8時間を目安に確保し、就寝前のスマートフォン使用は控えましょう。',
+        '休日はできるだけ仕事から離れ、趣味や軽い運動でリフレッシュする時間を作りましょう。',
+        '定期的に自分の状態をチェックし、気になる変化があれば早めに対処することが大切です。',
+      ],
+      mid:[
+        '業務の優先順位を書き出し、「やらなくてよいこと」を意識的に減らしてみましょう。',
+        '1日の中で5〜10分の「何もしない時間」を設けるだけで、自律神経の回復につながります。',
+        '睡眠の質が低下しているサインがある場合、入浴・軽いストレッチなど就寝前ルーティンを整えましょう。',
+        '肩こり・頭痛などの身体症状が続く場合は、ストレスによる身体化反応の可能性があります。',
+        '「相談しにくい」と感じている場合でも、産業医への相談は守秘義務があり安心して話せます。',
+        '感情の波を記録する「気分日記」をつけると、ストレスの引き金に気づきやすくなります。',
+      ],
+      high:[
+        '現在の状態は一人で抱え込まず、産業医への面談をお勧めします。相談内容の守秘は義務として保護されています。ご不明な点はまず総務部にご相談ください。',
+        '強い疲労・意欲低下・不眠が続く場合、休養が最優先です。上司や産業医に状況を伝えることが回復の第一歩です。',
+        '「頑張ればなんとかなる」と思いがちですが、高ストレス状態での無理は回復を遅らせます。今は休むことも仕事のうちです。',
+        '睡眠が2週間以上乱れている、食欲が著しく低下している場合は、医療機関への受診も検討してください。',
+        '職場環境の改善が必要な場合、産業医を通じて会社側に働きかけることができます。一人で解決しようとしなくて大丈夫です。',
+      ],
+    },
+    highNotice:'⚠️ ストレス反応スコアが高い状態です。産業医との面談をお勧めします。ご不明な点は総務部にご相談ください。',
+    pdfBtnText:'PDFをダウンロード',
+    driveBannerText:(name,fy)=>`${name}さんの${fy}年度 結果PDFをGoogleドライブに保存しました。メールに保存リンクを送信しています。`,
+    printTitle:(fy)=>`${fy}年度 職場ストレスチェック 結果`,
+    printSubtitle:(name,date)=>`${name}　${date}`,
+    printPrivacy:'※この結果は本人のみ使用してください。事業者への提供は本人の同意なしには行われません（労働安全衛生法第66条の10）。',
+    printCompany:'発行：健康管理室',
+    adminLoginTitle:'管理者ログイン', adminLoginDesc:'管理者専用ページです。パスワードを入力してください。',
+    adminPwPlaceholder:'パスワード', adminLoginBtn:'ログイン', loginError:'パスワードが違います',
+    adminDashTitle:'管理者ダッシュボード', exportBtn:'CSVダウンロード', pdfBtn:'PDF出力',
+    labelFiscalYear:'表示年度：',
+    fiscalYearCurrent:'（今年度）',
+    statLabelTotal:'回答者数', statSubTotal:'名',
+    statLabelHigh:'高ストレス者', statSubHigh:'名（要注意）',
+    statLabelAvgS:'平均ストレス反応', statLabelAvgSup:'平均サポート',
+    chartDistTitle:'判定分布', chartDeptTitle:'部署別 平均ストレス反応',
+    distLabels:{low:'低ストレス',mid:'注意',high:'高ストレス'},
+    personUnit:'名',
+    tableTitle:'全回答一覧',
+    tableHeaders:['日時','支店','部署','社員番号','ストレス反応','仕事の負荷','サポート','判定'],
+    tagLabel:{low:'低',mid:'注意',high:'高ストレス'},
+    noData:'回答データがありません',
+    adminNote:'※ 個人の同意がある回答のみ表示されます。集団分析として部署別データを産業保健スタッフと共有することができます。',
+    csvAlertEmpty:'エクスポートするデータがありません',
+    csvHeader:'日時,社員番号,支店,部署,ストレス反応,仕事の負荷,サポート,判定',
+    csvJudgment:{low:'低ストレス',mid:'注意',high:'高ストレス'},
+    questionsA:[
+      "非常にたくさんの仕事をしなければならない","時間内に仕事が処理しきれない","一生懸命働かなければならない",
+      "かなり注意を集中する必要がある","高度の知識や技術が必要なむずかしい仕事だ","勤務時間中はいつも仕事のことを考えていなければならない",
+      "からだを大変よく使う仕事だ","自分のペースで仕事ができる","自分で仕事の順番・やり方を決めることができる",
+      "職場の仕事の方針に自分の意見を反映できる","自分の技能や知識を仕事で使うことができる",
+      "私の部署内で意見のくい違いがある","私の部署と他の部署とはうまがあわない","私の職場の雰囲気は友好的である",
+      "私の職場の作業環境（騒音、照明、温度、換気など）はよくない","仕事の内容は自分にあっている"
+    ],
+    questionsB:[
+      "活気がわいてくる","元気がいっぱいだ","生き生きする","怒りを感じる","内心腹立たしい","イライラしている",
+      "ひどく疲れた","へとへとだ","だるい","気がはりつめている","不安だ","落着かない","ゆううつだ",
+      "何をするのも面倒だ","物事に集中できない","気分が晴れない","仕事が手につかない","悲しいと感じる",
+      "めまいがする","体のふしぶしが痛む","頭が痛い","首筋や肩がこる","腰が痛い","目が疲れる",
+      "動悸や息切れがする","胃腸の具合が悪い","食欲がない","よく眠れない","このごろ仕事が楽しい",
+      "仕事にはりあいを感じる","職場の仲間が友好的である"
+    ],
+    questionsC:[
+      "上司はあなたが困った時、いつでも相談にのってくれる","上司はあなたの仕事上の問題の解決を助けてくれる",
+      "上司はあなたの仕事を評価してくれる","上司はあなたの職場での地位を守ってくれる",
+      "上司はあなたの仕事に関心を持ってくれる","上司はあなたの個人的な問題を気にかけてくれる",
+      "職場の同僚はあなたが困った時、いつでも相談にのってくれる","職場の同僚はあなたの仕事上の問題の解決を助けてくれる",
+      "職場の同僚はあなたの仕事を評価してくれる","職場の同僚はあなたの職場での地位を守ってくれる",
+      "職場の同僚はあなたの仕事に関心を持ってくれる","職場の同僚はあなたの個人的な問題を気にかけてくれる"
+    ],
+  },
+  en: {
+    navForm:'Survey', navResult:'Results', navAdmin:'Admin',
+    formTitle: ()=>`FY${getCurrentFiscalYear()} Workplace Stress Check`,
+    formDesc:'A survey based on the Ministry of Health, Labour and Welfare guidelines. Please answer all questions.',
+    basicInfoLabel:'Basic Information',
+    labelName:'Name <span style="color:var(--high);font-size:11px">*Required</span>', namePlaceholder:'Taro Yamada',
+    alertName:'Please enter your name.',
+    labelId:'Employee ID <span style="color:var(--high);font-size:11px">*Required</span>',
+    alertId:'Please enter your Employee ID.',
+    alertDuplicate:(fy)=>`You have already completed the FY${fy} stress check. Only one submission per fiscal year is allowed.`,
+    labelDept:'Department', deptPlaceholder:'Please select',
+    depts:['Passenger Services','Cabin Cleaning','Flight Operations','General Affairs','Cargo'],
+    labelBranch:'Branch', branchPlaceholder:'Please select',
+    branches:['Haneda Airport','Narita Airport','Kansai Airport','Kitakyushu Airport'],
+    labelGender:'Gender', genderPlaceholder:'Please select',
+    genderMale:'Male', genderFemale:'Female', genderOther:'Prefer not to say',
+    labelEmail:'Email Address <span style="color:var(--high);font-size:11px">*Required for result delivery</span>',
+    emailNote:'Your results, scores, and advice will be sent to this address. It will not be shared outside the company.',
+    secATitle:'A. Work Stressors',
+    secADesc:'Please answer about your work over the past month.<br><small style="color:var(--text3)">1=Yes　2=Mostly yes　3=Somewhat no　4=No</small>',
+    secALabels:['Yes','Mostly','Somewhat','No'],
+    secBTitle:'B. Stress Reactions',
+    secBDesc:'Please answer about your condition over the past month.<br><small style="color:var(--text3)">1=Rarely　2=Sometimes　3=Often　4=Almost always</small>',
+    secBLabels:['Rarely','Sometimes','Often','Always'],
+    secCTitle:'C. Social Support',
+    secCDesc:'Please answer about the people in your workplace.<br><small style="color:var(--text3)">1=Very much　2=Considerably　3=A little　4=Not at all</small>',
+    secCLabels:['Very','Consid.','A little','Not at all'],
+    privacyNote:'* Results are displayed only to you. They will not be provided to your employer without your consent (Industrial Safety and Health Act, Article 66-10).',
+    submitBtn:'Review and Submit Answers', submitting:'Sending...',
+    confirmTitle:'Confirm Your Answers',
+    confirmDesc:'Please review the information below. Press "Submit" when ready.',
+    confirmSend:'Submit',
+    confirmBack:'Go Back and Edit',
+    confirmLabels:{name:'Name',id:'Employee ID',dept:'Department',branch:'Branch',gender:'Gender',email:'Email',basic:'Basic Information'},
+    alertIncomplete:(n)=>`You have ${n} unanswered question(s). Please complete all questions.`,
+    alertEmail:'Please enter a valid email address.',
+    resultTitle:'Stress Check Results',
+    resultDateSuffix:' (completed)',
+    mailOk:(e)=>`✓ Results sent to ${e}`,
+    mailSkip:'⚠ Email skipped (GAS not configured). Please check the results on screen.',
+    judgmentLabel:{low:'Low Stress',mid:'Caution',high:'High Stress'},
+    labelScoreStress:'Stress Reaction', labelScoreWorkload:'Work Demands', labelScoreSupport:'Social Support',
+    gaugeLabels:['Stress Reaction','Work Demands','Supervisor & Peer Support'],
+    pointSuffix:'pts',
+    criteriaTitle:'【Scoring Criteria (MHLW Simple Sum Method)】',
+    criteriaText:[
+      'A. Work Stressors (16 items, max 64pts): Higher = greater workload / stressors',
+      'B. Stress Reactions (31 items, max 124pts): ≥77 = high stress',
+      'C. Social Support (12 items, max 48pts): Higher = less support available',
+      'High stress ①: B ≥ 77pts',
+      'High stress ②: A+C ≥ 76pts AND B ≥ 63pts',
+      '* Reverse scoring applied automatically: A Q1–7, 11–13, 15 and B Q1–3.',
+    ],
+    adviceTitle:{low:'You are in good shape',mid:'Watch your stress levels',high:'High stress detected'},
+    adviceSubtitle:{
+      workloadHigh:'【For those with high workload】',
+      workloadMid:'【Review your workload】',
+      supportLow:'【Support levels appear low】',
+      stressBody:'【Physical / fatigue signs present】',
+      stressMood:'【Low mood or motivation detected】',
+      general:'【General self-care】',
+    },
+    adviceItems:{
+      low:[
+        'Your workload and pace appear well-balanced. Maintain this consciously.',
+        'Good relationships with supervisors and colleagues provide psychological safety — keep nurturing them.',
+        'Aim for 7–8 hours of sleep and reduce screen time before bed.',
+        'On days off, try to fully disconnect from work through hobbies or light exercise.',
+        'Continue checking in on your stress regularly so you can act early if something changes.',
+      ],
+      mid:[
+        'List your tasks by priority and consciously identify what can be removed or delegated.',
+        'Even 5–10 minutes of doing nothing each day can help restore your nervous system.',
+        'If sleep quality is declining, build a bedtime routine: bath, light stretching, no screens.',
+        'Persistent physical symptoms (headaches, stiff neck) may signal stress somatization — pay attention.',
+        'Occupational health consultations are confidential — speaking with a health professional is safe.',
+        'Try keeping a brief "mood diary" to identify your personal stress triggers.',
+      ],
+      high:[
+        'Please consider consulting an occupational physician. Confidentiality is legally protected. If you are unsure how to arrange this, please contact General Affairs.',
+        'If you are experiencing prolonged fatigue, loss of motivation, or insomnia, rest must come first.',
+        'Pushing through high stress can delay recovery. Taking rest is part of doing your job well.',
+        'If sleep has been disturbed for 2+ weeks or appetite is severely reduced, please consider seeing a doctor.',
+        'If the work environment needs to change, an occupational physician can advocate on your behalf.',
+      ],
+    },
+    highNotice:'⚠️ Your stress reaction score is elevated. We recommend a consultation with an occupational physician. If you are unsure how to proceed, please contact General Affairs.',
+    pdfBtnText:'Download PDF',
+    driveBannerText:(name,fy)=>`${name}'s FY${fy} result PDF has been saved to Google Drive. A link has been sent to your email.`,
+    printTitle:(fy)=>`FY${fy} Workplace Stress Check Results`,
+    printSubtitle:(name,date)=>`${name}　${date}`,
+    printPrivacy:'* This result is for personal use only. It will not be shared with your employer without consent (Industrial Safety and Health Act, Article 66-10).',
+    printCompany:'Issued by: Health Management Office',
+    adminLoginTitle:'Admin Login', adminLoginDesc:'This page is for administrators only. Please enter your password.',
+    adminPwPlaceholder:'Password', adminLoginBtn:'Log In', loginError:'Incorrect password',
+    adminDashTitle:'Admin Dashboard', exportBtn:'Download CSV', pdfBtn:'Export PDF',
+    labelFiscalYear:'Fiscal Year: ',
+    fiscalYearCurrent:'(Current)',
+    statLabelTotal:'Respondents', statSubTotal:'people',
+    statLabelHigh:'High Stress', statSubHigh:'(attention needed)',
+    statLabelAvgS:'Avg. Stress Reaction', statLabelAvgSup:'Avg. Support',
+    chartDistTitle:'Judgment Distribution', chartDeptTitle:'Avg. Stress by Department',
+    distLabels:{low:'Low Stress',mid:'Caution',high:'High Stress'},
+    personUnit:'',
+    tableTitle:'All Responses',
+    tableHeaders:['Date','Branch','Department','Employee ID','Stress','Workload','Support','Judgment'],
+    tagLabel:{low:'Low',mid:'Caution',high:'High'},
+    noData:'No response data available',
+    adminNote:'* Only responses with consent are shown. Department-level aggregate data may be shared with occupational health staff.',
+    csvAlertEmpty:'No data to export',
+    csvHeader:'Date,Employee ID,Branch,Department,Stress Reaction,Work Demands,Support,Judgment',
+    csvJudgment:{low:'Low Stress',mid:'Caution',high:'High Stress'},
+    questionsA:[
+      "I have an enormous amount of work to do","I cannot finish my work within the allotted time","I have to work very hard",
+      "I need to concentrate intensely","My work requires advanced knowledge and skill","I have to think about work throughout my working hours",
+      "My work is very physically demanding","I can work at my own pace","I can decide the order and method of my work",
+      "I can reflect my opinions in my workplace's work policies","I can use my skills and knowledge in my work",
+      "There are conflicts of opinion within my department","My department and other departments do not get along well","The atmosphere in my workplace is friendly",
+      "My workplace environment (noise, lighting, temperature, ventilation, etc.) is poor","The content of my work suits me"
+    ],
+    questionsB:[
+      "I feel full of energy","I feel vigorous","I feel alive and active","I feel angry","I feel inwardly irritated","I feel irritable",
+      "I feel utterly exhausted","I feel worn out","I feel lethargic","I feel tense","I feel anxious","I feel restless","I feel depressed",
+      "I find everything a bother","I cannot concentrate","My mood does not lift","I cannot get on with my work","I feel sad",
+      "I feel dizzy","My body aches all over","I have a headache","My neck and shoulders are stiff","I have lower back pain","My eyes feel strained",
+      "I have palpitations or shortness of breath","I have gastrointestinal problems","I have no appetite","I cannot sleep well","I enjoy my work lately",
+      "I feel a sense of purpose in my work","My colleagues are friendly"
+    ],
+    questionsC:[
+      "My supervisor is always available to consult when I am in trouble","My supervisor helps me solve work-related problems",
+      "My supervisor evaluates my work","My supervisor protects my position in the workplace",
+      "My supervisor takes an interest in my work","My supervisor cares about my personal problems",
+      "My colleagues are always available to consult when I am in trouble","My colleagues help me solve work-related problems",
+      "My colleagues evaluate my work","My colleagues protect my position in the workplace",
+      "My colleagues take an interest in my work","My colleagues care about my personal problems"
+    ],
+  }
+};
+
+// ===================== STATE =====================
+let currentLang = 'ja';
+let answers = { A:{}, B:{}, C:{} };
+// ===================== ADMIN PASSWORD =====================
+// パスワードはGASスクリプト側の ADMIN_PASSWORD で一元管理します。
+// ローカルダッシュボード（localStorage参照）用のパスワードも
+// GASと同じ値をここに設定してください。
+// ▼▼▼ GASの ADMIN_PASSWORD と同じ値に変更してください ▼▼▼
+const ADMIN_PW = 'Simptier2026';
+// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+let adminLoggedIn = false;
+
+// ===================== LANG =====================
+function setLang(lang) {
+  currentLang = lang;
+  document.getElementById('btnJA').classList.toggle('active', lang==='ja');
+  document.getElementById('btnEN').classList.toggle('active', lang==='en');
+  document.documentElement.lang = lang;
+  renderUI();
+  rebuildQuestions();
+}
+
+function t(key) { return LANGS[currentLang][key]; }
+
+function renderUI() {
+  const L = LANGS[currentLang];
+  const fy = getCurrentFiscalYear();
+  document.getElementById('navBrand').innerHTML = currentLang==='ja'
+    ? `<span style="color:var(--accent)">${fy}年度</span> 職場ストレスチェック`
+    : `FY<span style="color:var(--accent)">${fy}</span> Workplace Stress Check`;
+  // Nav tabs
+  document.getElementById('tabForm').textContent = L.navForm;
+  document.getElementById('tabResult').textContent = L.navResult;
+  document.getElementById('tabAdmin').textContent = L.navAdmin;
+  // Form
+  document.getElementById('formTitle').textContent = typeof L.formTitle==='function' ? L.formTitle() : L.formTitle;
+  document.getElementById('formDesc').textContent = L.formDesc;
+  document.getElementById('basicInfoLabel').textContent = L.basicInfoLabel;
+  document.getElementById('labelName').innerHTML = L.labelName;
+  document.getElementById('empName').placeholder = L.namePlaceholder;
+  document.getElementById('labelId').innerHTML = L.labelId;
+  document.getElementById('labelDept').textContent = L.labelDept;
+  document.getElementById('labelEmail').innerHTML = L.labelEmail;
+  document.getElementById('emailNote').textContent = L.emailNote;
+  document.getElementById('labelGender').textContent = L.labelGender;
+  document.getElementById('deptPlaceholder').textContent = L.deptPlaceholder;
+  document.getElementById('genderPlaceholder').textContent = L.genderPlaceholder;
+  document.getElementById('genderMale').textContent = L.genderMale;
+  document.getElementById('genderFemale').textContent = L.genderFemale;
+  document.getElementById('genderOther').textContent = L.genderOther;
+  // Dept options
+  const deptSel = document.getElementById('empDept');
+  const currentDeptVal = deptSel.value;
+  while(deptSel.options.length > 1) deptSel.remove(1);
+  const deptValues = ['passenger','cleaning','operations','general_affairs','cargo'];
+  L.depts.forEach((d,i) => {
+    const opt = document.createElement('option');
+    opt.value = deptValues[i];
+    opt.textContent = d;
+    deptSel.appendChild(opt);
+  });
+  // Branch label & options
+  document.getElementById('labelBranch').textContent = L.labelBranch;
+  document.getElementById('branchPlaceholder').textContent = L.branchPlaceholder;
+  const branchSel = document.getElementById('empBranch');
+  while(branchSel.options.length > 1) branchSel.remove(1);
+  const branchValues = ['haneda','narita','kansai','kitakyushu'];
+  L.branches.forEach((b,i) => {
+    const opt = document.createElement('option');
+    opt.value = branchValues[i];
+    opt.textContent = b;
+    branchSel.appendChild(opt);
+  });
+  document.getElementById('secATitleLabel').textContent = L.secATitle;
+  document.getElementById('secADesc').innerHTML = L.secADesc;
+  document.getElementById('secBTitleLabel').textContent = L.secBTitle;
+  document.getElementById('secBDesc').innerHTML = L.secBDesc;
+  document.getElementById('secCTitleLabel').textContent = L.secCTitle;
+  document.getElementById('secCDesc').innerHTML = L.secCDesc;
+  document.getElementById('privacyNote').textContent = L.privacyNote;
+  document.getElementById('submitBtn').textContent = L.submitBtn;
+  document.getElementById('confirmTitle').textContent = L.confirmTitle || '';
+  document.getElementById('confirmDesc').textContent  = L.confirmDesc  || '';
+  document.getElementById('confirmBackBtn').textContent = L.confirmBack || '';
+  document.getElementById('confirmSendBtn').textContent = L.confirmSend || '';
+  // Result
+  document.getElementById('resultTitle').textContent = L.resultTitle;
+  document.getElementById('labelScoreStress').textContent = L.labelScoreStress;
+  document.getElementById('labelScoreWorkload').textContent = L.labelScoreWorkload;
+  document.getElementById('labelScoreSupport').textContent = L.labelScoreSupport;
+  document.getElementById('pdfBtnText').textContent = L.pdfBtnText;
+  // Admin
+  document.getElementById('adminLoginTitle').textContent = L.adminLoginTitle;
+  document.getElementById('adminLoginDesc').textContent = L.adminLoginDesc;
+  document.getElementById('adminPw').placeholder = L.adminPwPlaceholder;
+  document.getElementById('adminLoginBtn').textContent = L.adminLoginBtn;
+  document.getElementById('loginError').textContent = L.loginError;
+  document.getElementById('adminDashTitle').textContent = L.adminDashTitle;
+  document.getElementById('exportBtn').textContent = L.exportBtn;
+  document.getElementById('pdfBtn').textContent = L.pdfBtn;
+  document.getElementById('labelFiscalYear').textContent = L.labelFiscalYear;
+  buildFiscalYearSelect();
+  document.getElementById('statLabelTotal').textContent = L.statLabelTotal;
+  document.getElementById('statSubTotal').textContent = L.statSubTotal;
+  document.getElementById('statLabelHigh').textContent = L.statLabelHigh;
+  document.getElementById('statSubHigh').textContent = L.statSubHigh;
+  document.getElementById('statLabelAvgS').textContent = L.statLabelAvgS;
+  document.getElementById('statLabelAvgSup').textContent = L.statLabelAvgSup;
+  document.getElementById('chartDistTitle').textContent = L.chartDistTitle;
+  document.getElementById('chartDeptTitle').textContent = L.chartDeptTitle;
+  document.getElementById('tableTitle').textContent = L.tableTitle;
+  document.getElementById('adminNote').textContent = L.adminNote;
+  // Table headers
+  const th = document.getElementById('tableHead');
+  th.innerHTML = L.tableHeaders.map(h=>`<th>${h}</th>`).join('');
+  if(adminLoggedIn) loadAdminData();
+}
+
+// ===================== QUESTIONS =====================
+function rebuildQuestions() {
+  const L = LANGS[currentLang];
+  ['sectionA','sectionB','sectionC'].forEach(id => document.getElementById(id).innerHTML = '');
+  buildSection('sectionA', L.questionsA, 'A', L.secALabels);
+  buildSection('sectionB', L.questionsB, 'B', L.secBLabels);
+  buildSection('sectionC', L.questionsC, 'C', L.secCLabels);
+  // Restore answers visually
+  ['A','B','C'].forEach(sec => {
+    Object.entries(answers[sec]).forEach(([idx, val]) => {
+      const opts = document.querySelectorAll(`#opts_${sec}_${idx} .q-opt`);
+      opts.forEach((btn,i) => btn.classList.toggle('selected', i+1===val));
+    });
+  });
+}
+
+function buildSection(containerId, questions, section, labels) {
+  const el = document.getElementById(containerId);
+
+  // スティッキーラベルバー（スクロールしても画面上部に固定）
+  const sticky = document.createElement('div');
+  sticky.className = 'sticky-labels';
+  const sectionNames = {
+    A: currentLang==='ja' ? 'A. ストレスの原因' : 'A. Work Stressors',
+    B: currentLang==='ja' ? 'B. ストレス反応'  : 'B. Stress Reactions',
+    C: currentLang==='ja' ? 'C. 周囲のサポート': 'C. Social Support',
+  };
+  sticky.innerHTML = `
+    <span class="sl-title">${sectionNames[section]}</span>
+    <div class="sl-opts">
+      ${labels.map((l,i)=>`
+        <div class="sl-item">
+          <span class="sl-num">${i+1}</span>
+          ${l}
+        </div>`).join('')}
+    </div>`;
+  el.appendChild(sticky);
+
+  questions.forEach((q,i) => {
+    const row = document.createElement('div');
+    row.className = 'question-row';
+    row.innerHTML = `
+      <div class="q-num">${i+1}</div>
+      <div class="q-text">${q}</div>
+      <div class="q-options" id="opts_${section}_${i}">
+        ${[1,2,3,4].map(v=>`<button class="q-opt" onclick="setAnswer('${section}',${i},${v})">${v}</button>`).join('')}
+      </div>`;
+    el.appendChild(row);
+  });
+}
+
+function setAnswer(section, idx, val) {
+  answers[section][idx] = val;
+  const opts = document.querySelectorAll(`#opts_${section}_${idx} .q-opt`);
+  opts.forEach((btn,i) => btn.classList.toggle('selected', i+1===val));
+  updateProgress();
+}
+
+function updateProgress() {
+  const total = LANGS[currentLang].questionsA.length + LANGS[currentLang].questionsB.length + LANGS[currentLang].questionsC.length;
+  const done = Object.keys(answers.A).length + Object.keys(answers.B).length + Object.keys(answers.C).length;
+  document.getElementById('progressFill').style.width = (done/total*100)+'%';
+}
+
+// ===================== SCORING =====================
+// 厚労省「職業性ストレス簡易調査票57項目」正式採点方式
+// 逆転項目（回答1→4点, 2→3点, 3→2点, 4→1点に変換）:
+//   A: 問1〜7, 11〜13, 15（0〜6, 10〜12, 14 ※0始まりインデックス）
+//   B: 問1〜3（0〜2 ※0始まりインデックス）
+// ※ 高ストレスが高得点になるよう統一する
+
+const REVERSE_A = [0,1,2,3,4,5,6, 10,11,12, 14]; // A問1-7, 11-13, 15
+const REVERSE_B = [0,1,2];                          // B問1-3（活気・元気・生き生き）
+
+function reverseScore(v) { return 5 - v; } // 1→4, 2→3, 3→2, 4→1
+
+function calcScores() {
+  // A: ストレス要因（16問）
+  let workload = 0;
+  for(let i=0; i<16; i++){
+    const v = answers.A[i] || 2;
+    workload += REVERSE_A.includes(i) ? reverseScore(v) : v;
+  }
+
+  // B: ストレス反応（31問）
+  let stressReaction = 0;
+  for(let i=0; i<31; i++){
+    const v = answers.B[i] || 2;
+    stressReaction += REVERSE_B.includes(i) ? reverseScore(v) : v;
+  }
+
+  // C: 周囲のサポート（12問）※そのまま加算（高いほどサポート薄い）
+  let support = 0;
+  for(let i=0; i<12; i++) support += answers.C[i] || 2;
+
+  return { workload, stressReaction, support };
+}
+
+// 高ストレス判定基準（厚労省・単純合計計算法）
+// ①  B（ストレス反応）≥ 77点
+// ② A+C（ストレス要因+サポート）≥ 76点 かつ B ≥ 63点
+function getJudgment({ stressReaction, workload, support }) {
+  const ac = workload + support;
+  if(stressReaction >= 77) return 'high';
+  if(ac >= 76 && stressReaction >= 63) return 'high';
+  if(stressReaction >= 63 || ac >= 66) return 'mid';
+  return 'low';
+}
+
+// ===================== DUPLICATE CHECK =====================
+function dupKey(empId, fy) {
+  return `submitted_${fy}_${empId.trim().toLowerCase()}`;
+}
+
+function isAlreadySubmitted(empId, fy) {
+  return localStorage.getItem(dupKey(empId, fy)) === '1';
+}
+
+function markSubmitted(empId, fy) {
+  localStorage.setItem(dupKey(empId, fy), '1');
+}
+
+// ===================== SUBMIT → 確認画面 =====================
+let pendingRecord = null; // 確認画面承認待ちのレコード
+
+function submitForm() {
+  const L = LANGS[currentLang];
+
+  // 全問回答チェック
+  const total = L.questionsA.length + L.questionsB.length + L.questionsC.length;
+  const done  = Object.keys(answers.A).length + Object.keys(answers.B).length + Object.keys(answers.C).length;
+  if(done < total) { alert(L.alertIncomplete(total - done)); return; }
+
+  // 氏名チェック
+  const empName = document.getElementById('empName').value.trim();
+  if(!empName) { alert(L.alertName); document.getElementById('empName').focus(); return; }
+
+  // 社員番号チェック
+  const empId = document.getElementById('empId').value.trim();
+  if(!empId) { alert(L.alertId); document.getElementById('empId').focus(); return; }
+
+  // メールチェック
+  const empEmail = document.getElementById('empEmail').value.trim();
+  if(!empEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(empEmail)) {
+    alert(L.alertEmail); document.getElementById('empEmail').focus(); return;
+  }
+
+  // 重複チェック（社員番号＋年度）
+  const fy = getCurrentFiscalYear();
+  if(isAlreadySubmitted(empId, fy)) {
+    alert(L.alertDuplicate(fy)); return;
+  }
+
+  // 基本情報を収集
+  const deptSel   = document.getElementById('empDept');
+  const branchSel = document.getElementById('empBranch');
+  const scores    = calcScores();
+  const judgment  = getJudgment(scores);
+
+  pendingRecord = {
+    ts:       new Date().toISOString(),
+    lang:     currentLang,
+    name:     empName,
+    id:       empId,
+    dept:     deptSel.options[deptSel.selectedIndex]?.text   || '—',
+    branch:   branchSel.options[branchSel.selectedIndex]?.text || '—',
+    gender:   document.getElementById('empGender').value || '—',
+    email:    empEmail,
+    scores,
+    judgment,
+    fiscalYear: fy,
+  };
+
+  // 確認モーダルを表示
+  const cl = L.confirmLabels;
+  const genderText = {male: L.genderMale, female: L.genderFemale, other: L.genderOther}[pendingRecord.gender] || '—';
+
+  // セクションごとの選択肢ラベル
+  const secALabels = L.secALabels;
+  const secBLabels = L.secBLabels;
+  const secCLabels = L.secCLabels;
+
+  // 基本情報テーブル
+  const basicInfo = `
+    <div style="background:var(--surface2);border-radius:10px;padding:14px 16px;margin-bottom:16px;">
+      <p style="font-size:11px;font-weight:500;color:var(--text3);margin-bottom:10px;text-transform:uppercase;letter-spacing:.05em;">${cl.basic||'基本情報'}</p>
+      <table style="width:100%;border-collapse:collapse;">
+        ${[[cl.name,pendingRecord.name],[cl.id,pendingRecord.id],[cl.dept,pendingRecord.dept],[cl.branch,pendingRecord.branch],[cl.gender,genderText],[cl.email,pendingRecord.email]]
+          .map(([k,v])=>`<tr>
+            <td style="padding:4px 8px 4px 0;color:var(--text3);font-size:12px;white-space:nowrap;width:35%">${k}</td>
+            <td style="padding:4px 0;font-size:13px;color:var(--text);font-weight:500">${v}</td>
+          </tr>`).join('')}
+      </table>
+    </div>`;
+
+  // 質問回答テーブル生成関数
+  function qSection(title, questions, sectionKey, labels) {
+    const rows = questions.map((q, i) => {
+      const val = answers[sectionKey][i];
+      const answered = val !== undefined;
+      const labelText = answered ? `${val}. ${labels[val-1]}` : '—';
+      const color = answered ? 'var(--accent)' : 'var(--high)';
+      return `<tr style="border-bottom:1px solid var(--bg);">
+        <td style="padding:6px 8px 6px 0;font-size:11px;color:var(--text3);width:28px;text-align:center">${i+1}</td>
+        <td style="padding:6px 8px 6px 4px;font-size:12px;color:var(--text);line-height:1.5">${q}</td>
+        <td style="padding:6px 0;font-size:12px;color:${color};white-space:nowrap;text-align:right;font-weight:500">${labelText}</td>
+      </tr>`;
+    }).join('');
+    return `
+      <div style="margin-bottom:14px;">
+        <p style="font-size:11px;font-weight:500;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em;">${title}</p>
+        <div style="background:var(--surface2);border-radius:10px;overflow:hidden;">
+          <table style="width:100%;border-collapse:collapse;padding:0 12px;">
+            <tbody style="display:block;padding:4px 12px;">${rows}</tbody>
+          </table>
+        </div>
+      </div>`;
+  }
+
+  document.getElementById('confirmContent').innerHTML =
+    basicInfo +
+    qSection(L.secATitle, L.questionsA, 'A', secALabels) +
+    qSection(L.secBTitle, L.questionsB, 'B', secBLabels) +
+    qSection(L.secCTitle, L.questionsC, 'C', secCLabels);
+
+  document.getElementById('confirmOverlay').style.display = 'flex';
+} // submitForm end
+
+function closeConfirm() {
+  document.getElementById('confirmOverlay').style.display = 'none';
+  pendingRecord = null;
+}
+
+// ===================== doSend（確認後の実際の送信） =====================
+function doSend() {
+  if(!pendingRecord) return;
+  const L = LANGS[currentLang];
+  const record = pendingRecord;
+  pendingRecord = null;
+
+  document.getElementById('confirmOverlay').style.display = 'none';
+
+  // ローカル保存
+  const saved = JSON.parse(localStorage.getItem('stressRecords') || '[]');
+  saved.push(record);
+  localStorage.setItem('stressRecords', JSON.stringify(saved));
+  saveRecord(record);
+
+  // 重複フラグをセット（年度＋社員番号）
+  markSubmitted(record.id, record.fiscalYear);
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = L.submitting;
+
+  if(GAS_URL.includes('【ここに')) {
+    showResult(record.scores, record.judgment, record.name, record.email, false);
+    btn.disabled = false; btn.textContent = L.submitBtn; return;
+  }
+
+  fetch(GAS_URL, {
+    method: 'POST', mode: 'no-cors',
+    body: JSON.stringify(record),
+    headers: { 'Content-Type': 'application/json' }
+  })
+    .then(() => {
+      showResult(record.scores, record.judgment, record.name, record.email, true);
+      // ドライブ保存バナーを表示（GASがドライブ保存完了後）
+      const fy = record.fiscalYear || getCurrentFiscalYear();
+      const L2 = LANGS[currentLang];
+      const banner = document.getElementById('driveBanner');
+      const bannerText = document.getElementById('driveBannerText');
+      bannerText.textContent = L2.driveBannerText(record.name, fy);
+      banner.style.display = 'block';
+    })
+    .catch(() => showResult(record.scores, record.judgment, record.name, record.email, false))
+    .finally(() => { btn.disabled = false; btn.textContent = L.submitBtn; });
+}
+
+// ===================== RESULT =====================
+function showResult(scores, judgment, name, email, mailSent) {
+  const L = LANGS[currentLang];
+  const { workload, stressReaction, support } = scores;
+
+  // Mail banner
+  const mb = document.getElementById('mailBanner');
+  if(mailSent===true) {
+    mb.style.display='block'; mb.style.background='var(--accent-light)';
+    mb.style.borderColor='#74c69d'; mb.style.color='var(--low)';
+    mb.textContent = L.mailOk(email);
+  } else if(mailSent===false) {
+    mb.style.display='block'; mb.style.background='var(--warn-light)';
+    mb.style.borderColor='#f5c09e'; mb.style.color='#7a4010';
+    mb.textContent = L.mailSkip;
+  }
+
+  const locale = currentLang==='ja' ? 'ja-JP' : 'en-US';
+  const dateStr = new Date().toLocaleDateString(locale,{year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('resultDate').textContent = dateStr + L.resultDateSuffix;
+
+  // 印刷用ヘッダー・フッターを設定
+  const fy = getCurrentFiscalYear();
+  document.getElementById('printTitle').textContent = L.printTitle(fy);
+  document.getElementById('printSubtitle').textContent = L.printSubtitle(name, dateStr);
+  document.getElementById('printPrivacy').textContent = L.printPrivacy;
+  document.getElementById('printCompany').textContent = L.printCompany;
+
+  // ドライブバナーはdoSendから設定するためここではリセット
+  document.getElementById('driveBanner').style.display = 'none';
+
+  const badge = document.getElementById('resultBadge');
+  badge.textContent = L.judgmentLabel[judgment];
+  badge.className = 'result-badge ' + judgment;
+
+  document.getElementById('scoreStress').textContent = stressReaction;
+  document.getElementById('scoreWorkload').textContent = workload;
+  document.getElementById('scoreSupport').textContent = support;
+
+  // Gauges（最大値・閾値を正式採点基準に合わせる）
+  const gaugeData = [
+    { label:L.gaugeLabels[0], val:stressReaction, max:124,
+      color: stressReaction>=77?'var(--high)': stressReaction>=63?'var(--mid)':'var(--low)' },
+    { label:L.gaugeLabels[1], val:workload, max:64,
+      color: workload>=50?'var(--high)': workload>=40?'var(--mid)':'var(--low)' },
+    { label:L.gaugeLabels[2], val:support, max:48,
+      color: support>=36?'var(--high)': support>=28?'var(--mid)':'var(--low)' },
+  ];
+  document.getElementById('gauges').innerHTML = gaugeData.map(g=>`
+    <div class="gauge-title-lbl">${g.label}</div>
+    <div class="gauge-bar"><div class="gauge-fill" style="width:${Math.round(g.val/g.max*100)}%;background:${g.color}"></div></div>
+    <div class="gauge-row"><span>0</span><span>${g.val} / ${g.max} ${L.pointSuffix}</span></div>
+  `).join('');
+
+  // Advice（スコア・領域別に細分化）
+  const ab = document.getElementById('adviceBox');
+  const accentCol = judgment==='high'?'var(--high)':judgment==='mid'?'var(--mid)':'var(--accent)';
+  ab.style.borderLeftColor = accentCol;
+
+  // 領域別の補足アドバイスを動的に追加
+  let extraAdvice = [];
+  if(workload >= 40) extraAdvice.push(`<p style="margin:8px 0 4px;font-size:12px;font-weight:500;color:var(--mid)">${L.adviceSubtitle.workloadHigh}</p><ul>${[
+    currentLang==='ja'
+      ? '業務量が非常に高い状態です。上司に業務分担の見直しを相談することをお勧めします。'
+      : 'Your workload is very high. Consider discussing task redistribution with your supervisor.',
+    currentLang==='ja'
+      ? '「断る・先送りする」ことも仕事の技術です。すべてを一人で抱えなくて大丈夫です。'
+      : '"Saying no" and delegating are professional skills. You do not need to carry everything alone.',
+  ].map(i=>`<li>${i}</li>`).join('')}</ul>`);
+  else if(workload >= 35) extraAdvice.push(`<p style="margin:8px 0 4px;font-size:12px;font-weight:500;color:var(--mid)">${L.adviceSubtitle.workloadMid}</p><ul>${[
+    currentLang==='ja'
+      ? '仕事の負荷がやや高まっています。業務の整理・優先付けを定期的に行いましょう。'
+      : 'Your workload is slightly elevated. Regularly sort and prioritize your tasks.',
+  ].map(i=>`<li>${i}</li>`).join('')}</ul>`);
+
+  if(support >= 28) extraAdvice.push(`<p style="margin:8px 0 4px;font-size:12px;font-weight:500;color:var(--warn)">${L.adviceSubtitle.supportLow}</p><ul>${[
+    currentLang==='ja'
+      ? '上司・同僚からのサポートが十分に得られていない可能性があります。困ったことがあれば小さなことから相談してみましょう。'
+      : 'You may not be receiving adequate support from supervisors or colleagues. Try raising small concerns first.',
+    currentLang==='ja'
+      ? '産業医への相談は職場の人間関係に影響しません。気軽に利用できる窓口です。'
+      : 'Occupational health consultations are independent of workplace relationships — a safe space to talk.',
+  ].map(i=>`<li>${i}</li>`).join('')}</ul>`);
+
+  // 身体症状が強い場合（B後半：問19〜27 = 疲労・身体症状）
+  const bodyScore = [19,20,21,22,23,24,25,26,27].reduce((s,i)=>s+(answers.B[i]||2),0);
+  if(bodyScore >= 24) extraAdvice.push(`<p style="margin:8px 0 4px;font-size:12px;font-weight:500;color:var(--high)">${L.adviceSubtitle.stressBody}</p><ul>${[
+    currentLang==='ja'
+      ? '頭痛・肩こり・胃腸の不調など身体症状が出ています。これらはストレスの身体化サインです。休養と水分補給を意識してください。'
+      : 'Physical symptoms (headaches, stiffness, GI issues) are present — these are signs of stress somatization. Prioritize rest and hydration.',
+    currentLang==='ja'
+      ? '症状が2週間以上続く場合は、かかりつけ医または産業医への受診をご検討ください。'
+      : 'If symptoms persist for 2+ weeks, please consider consulting a doctor or occupational physician.',
+  ].map(i=>`<li>${i}</li>`).join('')}</ul>`);
+
+  // 気分・意欲の低下（B問13〜18 = 抑うつ・集中困難）
+  const moodScore = [13,14,15,16,17].reduce((s,i)=>s+(answers.B[i]||2),0);
+  if(moodScore >= 14) extraAdvice.push(`<p style="margin:8px 0 4px;font-size:12px;font-weight:500;color:var(--high)">${L.adviceSubtitle.stressMood}</p><ul>${[
+    currentLang==='ja'
+      ? '気分の落ち込みや意欲・集中力の低下が見られます。無理に気力を奮い起こそうとせず、まず休息を優先してください。'
+      : 'Low mood and reduced motivation/concentration are present. Do not push yourself — rest should come first.',
+    currentLang==='ja'
+      ? '「気持ちの問題」ではなく、脳・身体の疲弊サインです。産業医への相談を遠慮なく行ってください。'
+      : 'This is not a matter of willpower — it is a sign of mental and physical exhaustion. Please consult an occupational physician.',
+  ].map(i=>`<li>${i}</li>`).join('')}</ul>`);
+
+  ab.innerHTML = `
+    <h3 style="margin-bottom:10px;">${L.adviceTitle[judgment]}</h3>
+    <ul>${L.adviceItems[judgment].map(i=>`<li style="margin-bottom:4px;">${i}</li>`).join('')}</ul>
+    ${extraAdvice.length>0 ? '<hr style="border:none;border-top:1px solid var(--border);margin:14px 0;">'+extraAdvice.join('') : ''}
+  `;
+
+  // 判定基準の説明ボックス
+  const criteriaEl = document.getElementById('criteriaBox');
+  criteriaEl.innerHTML = `
+    <strong style="font-size:12px;color:var(--text2)">${L.criteriaTitle}</strong>
+    <ul style="margin-top:6px;padding-left:16px;">
+      ${L.criteriaText.map(t=>`<li style="font-size:11px;color:var(--text3);margin-bottom:2px;">${t}</li>`).join('')}
+    </ul>
+  `;
+
+  const hn = document.getElementById('highStressNotice');
+  hn.classList.toggle('hidden', judgment!=='high');
+  hn.textContent = L.highNotice;
+
+  document.getElementById('tabResult').style.display = '';
+  showPage('result');
+}
+
+// ===================== PDF DOWNLOAD =====================
+function downloadPDF() {
+  const L = LANGS[currentLang];
+  const fy = getCurrentFiscalYear();
+  const name = document.getElementById('scoreStress').textContent !== '—'
+    ? (document.getElementById('resultDate').textContent || '')
+    : '';
+  const orig = document.title;
+  document.title = typeof L.printTitle === 'function' ? L.printTitle(fy) : L.printTitle;
+  window.print();
+  document.title = orig;
+}
+
+// ===================== FISCAL YEAR =====================
+// 4月始まり年度を計算
+function getCurrentFiscalYear() {
+  const now = new Date();
+  return now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear() - 1;
+}
+
+function getFiscalYearLabel(fy) {
+  const L = LANGS[currentLang];
+  const cur = getCurrentFiscalYear();
+  const label = currentLang==='ja' ? `${fy}年度` : `FY${fy}`;
+  return fy === cur ? `${label} ${L.fiscalYearCurrent}` : label;
+}
+
+// 年度別のlocalStorageキー
+function storageKey(fy) { return `stressRecords_${fy}`; }
+
+// 保存済み年度の一覧（5年分 + 現在年度）
+function getAvailableFiscalYears() {
+  const cur = getCurrentFiscalYear();
+  const years = new Set([cur]);
+  // localStorageにデータがある年度を収集
+  for(let y = cur-5; y <= cur; y++) {
+    const data = localStorage.getItem(storageKey(y));
+    if(data && JSON.parse(data).length > 0) years.add(y);
+  }
+  return Array.from(years).sort((a,b)=>b-a); // 新しい順
+}
+
+function buildFiscalYearSelect() {
+  const sel = document.getElementById('fiscalYearSelect');
+  const cur = getCurrentFiscalYear();
+  const years = getAvailableFiscalYears();
+  const prevVal = parseInt(sel.value) || cur;
+  sel.innerHTML = years.map(y =>
+    `<option value="${y}" ${y===prevVal?'selected':''}>${getFiscalYearLabel(y)}</option>`
+  ).join('');
+  // 今年度バッジ更新
+  const badge = document.getElementById('fiscalYearBadge');
+  const selected = parseInt(sel.value);
+  badge.textContent = currentLang==='ja' ? `${selected}年度` : `FY${selected}`;
+  badge.style.display = 'inline';
+}
+
+function getSelectedFiscalYear() {
+  return parseInt(document.getElementById('fiscalYearSelect')?.value) || getCurrentFiscalYear();
+}
+
+// レコード保存（年度別）
+function saveRecord(record) {
+  const fy = getCurrentFiscalYear();
+  record.fiscalYear = fy;
+  const key = storageKey(fy);
+  const saved = JSON.parse(localStorage.getItem(key)||'[]');
+  saved.push(record);
+  localStorage.setItem(key, JSON.stringify(saved));
+}
+
+// ===================== ADMIN =====================
+function adminLogin() {
+  if(document.getElementById('adminPw').value === ADMIN_PW) {
+    adminLoggedIn = true;
+    document.getElementById('adminLogin').classList.add('hidden');
+    document.getElementById('adminDash').classList.remove('hidden');
+    buildFiscalYearSelect();
+    loadAdminData();
+  } else {
+    document.getElementById('loginError').classList.remove('hidden');
+  }
+}
+
+function loadAdminData() {
+  const L = LANGS[currentLang];
+  const fy = getSelectedFiscalYear();
+  const records = JSON.parse(localStorage.getItem(storageKey(fy))||'[]');
+
+  // バッジ更新
+  const badge = document.getElementById('fiscalYearBadge');
+  badge.textContent = currentLang==='ja' ? `${fy}年度` : `FY${fy}`;
+
+  document.getElementById('adminTotal').textContent = records.length;
+  document.getElementById('adminCount').textContent = records.length + (currentLang==='ja'?'件':' entries');
+  document.getElementById('adminHigh').textContent = records.filter(r=>r.judgment==='high').length;
+  if(records.length>0) {
+    document.getElementById('adminAvgStress').textContent = Math.round(records.reduce((s,r)=>s+r.scores.stressReaction,0)/records.length);
+    document.getElementById('adminAvgSupport').textContent = Math.round(records.reduce((s,r)=>s+r.scores.support,0)/records.length);
+  } else {
+    document.getElementById('adminAvgStress').textContent = '—';
+    document.getElementById('adminAvgSupport').textContent = '—';
+  }
+
+  // 判定分布
+  const dist={low:0,mid:0,high:0};
+  records.forEach(r=>dist[r.judgment]++);
+  const maxD = Math.max(dist.low,dist.mid,dist.high,1);
+  const colors={low:'var(--low)',mid:'var(--mid)',high:'var(--high)'};
+  document.getElementById('distChart').innerHTML = ['low','mid','high'].map(k=>`
+    <div class="dist-bar-row">
+      <div class="dist-label">${L.distLabels[k]}</div>
+      <div class="dist-track"><div class="dist-fill" style="width:${Math.round(dist[k]/maxD*100)}%;background:${colors[k]}"></div></div>
+      <div class="dist-count">${dist[k]}${L.personUnit}</div>
+    </div>`).join('');
+
+  // 部署別グラフ
+  const deptMap={};
+  records.forEach(r=>{ if(!deptMap[r.dept])deptMap[r.dept]=[]; deptMap[r.dept].push(r.scores.stressReaction); });
+  const depts=Object.entries(deptMap).map(([d,vals])=>({dept:d,avg:Math.round(vals.reduce((a,b)=>a+b,0)/vals.length)})).sort((a,b)=>b.avg-a.avg);
+  const maxA=depts.length>0?Math.max(...depts.map(d=>d.avg)):124;
+  document.getElementById('deptChart').innerHTML = depts.length>0
+    ? depts.map(d=>`<div class="dept-row"><div class="dept-name">${d.dept}</div><div class="dept-track"><div class="dept-fill" style="width:${Math.round(d.avg/maxA*100)}%"></div></div><div class="dept-score">${d.avg}</div></div>`).join('')
+    : `<p style="color:var(--text3);font-size:12px">${L.noData}</p>`;
+
+  // テーブル
+  document.getElementById('adminTableBody').innerHTML = records.length>0
+    ? records.slice().reverse().map(r=>`
+      <tr>
+        <td>${new Date(r.ts).toLocaleDateString(currentLang==='ja'?'ja-JP':'en-US')}</td>
+        <td>${r.branch||'—'}</td>
+        <td>${r.dept}</td><td>${r.id}</td>
+        <td>${r.scores.stressReaction}</td><td>${r.scores.workload}</td><td>${r.scores.support}</td>
+        <td><span class="tag ${r.judgment}">${L.tagLabel[r.judgment]}</span></td>
+      </tr>`).join('')
+    : `<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:20px">${L.noData}</td></tr>`;
+}
+
+function exportCSV() {
+  const L = LANGS[currentLang];
+  const fy = getSelectedFiscalYear();
+  const records = JSON.parse(localStorage.getItem(storageKey(fy))||'[]');
+  if(!records.length){alert(L.csvAlertEmpty);return;}
+  const rows = records.map(r=>[
+    new Date(r.ts).toLocaleString(currentLang==='ja'?'ja-JP':'en-US'),
+    r.id, r.branch||'—', r.dept,
+    r.scores.stressReaction, r.scores.workload, r.scores.support,
+    L.csvJudgment[r.judgment]
+  ].join(',')).join('\n');
+  const fyLabel = currentLang==='ja' ? `${fy}年度` : `FY${fy}`;
+  const blob=new Blob(['\uFEFF'+L.csvHeader+'\n'+rows],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`stress_check_${fyLabel}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+function exportPDF() {
+  const fy = getSelectedFiscalYear();
+  const fyLabel = currentLang==='ja' ? `${fy}年度 職場ストレスチェック` : `FY${fy} Workplace Stress Check`;
+  // 印刷用タイトルを一時設定してブラウザ印刷ダイアログを開く
+  const orig = document.title;
+  document.title = fyLabel;
+  window.print();
+  document.title = orig;
+}
+
+// ===================== NAV =====================
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  const map={form:'tabForm',result:'tabResult',admin:'tabAdmin'};
+  if(map[id]) document.getElementById(map[id]).classList.add('active');
+  if(id==='admin'&&adminLoggedIn) loadAdminData();
+}
+
+// ===================== INIT =====================
+setLang('ja');
+</script>
+</body>
+</html>
